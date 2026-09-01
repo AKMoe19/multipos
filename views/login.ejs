@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-lg border-0 p-4" style="width: 380px;">
+        <h3 class="text-center fw-bold mb-3 text-primary"><i class="fas fa-shop me-2"></i> POS Login</h3>
+        <p class="text-muted text-center small mb-4">Account information</p>
+
+        <% if (error) { %>
+            <div class="alert alert-danger p-2 small text-center"><%= error %></div>
+        <% } %>
+
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label class="form-label fw-bold small">User Name</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter with username" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">Login</button>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

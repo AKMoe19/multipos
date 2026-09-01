@@ -1,0 +1,21 @@
+pos-system/
+├── models/
+│   ├── User.js
+│   ├── Product.js
+│   └── Sale.js
+├── public/
+│   └── uploads/
+├── views/
+│   ├── partials/
+│   │   ├── header.ejs
+│   │   └── footer.ejs
+│   ├── login.ejs
+│   ├── admin.ejs
+│   └── pos.ejs
+├── app.js
+└── package.json
+
+Browser တွင် http://localhost:3000 သို့ သွားပါ-
+
+	Shop 1 မုဒ် - Username: user1 | Password: admin123
+	Shop 2 မုဒ် - Username: user2 | Password: admin123

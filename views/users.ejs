@@ -1,0 +1,119 @@
+<%- include('partials/header') %>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/admin"><i class="fas fa-boxes me-2"></i> Admin Panel (<%= user.username %>)</a>
+        <div class="navbar-nav ms-auto d-flex flex-row gap-2">
+            <a href="/admin" class="btn btn-outline-light btn-sm"><i class="fas fa-box me-1"></i> Products</a>
+            <a href="/pos" class="btn btn-outline-info btn-sm"><i class="fas fa-cash-register me-1"></i> POS View</a>
+            <a href="/logout" class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold"><i class="fa-solid fa-layer-group me-2"></i> Cashier Management</h4>
+        <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addCashierModal">
+            <i class="fas fa-user-plus me-1"></i> Add New Cashier
+        </button>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-danger p-2 small"><%= error %></div>
+    <% } %>
+
+    <!-- Cashiers List Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Cashier Username</th>
+                        <th>Role</th>
+                        <th>Shop ID</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(cashiers.length === 0) { %>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Cashier အကောင့်များ မရှိသေးပါ။</td></tr>
+                    <% } %>
+                    <% cashiers.forEach((c, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td class="fw-bold text-primary"><i class="fas fa-user me-2"></i><%= c.username %></td>
+                            <td><span class="badge bg-secondary">Cashier</span></td>
+                            <td><code><%= c.tenantId %></code></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#editModal<%= c._id %>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="/admin/users/delete/<%= c._id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ဒီ Cashier အကောင့်ကို ဖျက်မှာ သေချာပါသလား?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Edit Modal for each Cashier -->
+                        <div class="modal fade" id="editModal<%= c._id %>" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title fw-bold">Edit Cashier : <%= c.username %></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="/admin/users/edit/<%= c._id %>" method="POST">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold">Username</label>
+                                                <input type="text" name="username" class="form-control" value="<%= c.username %>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold">Password (မပြောင်းချင်ပါက အလွတ်ထားခဲ့ပါ)</label>
+                                                <input type="password" name="newPassword" class="form-control" placeholder="******">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-warning fw-bold">Save Update</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Cashier Modal -->
+<div class="modal fade" id="addCashierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Create New Cashier Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/users/add" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Cashier Name</label>
+                        <input type="text" name="username" class="form-control" placeholder="Example : cashier_shop1..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="******" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary fw-bold">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
