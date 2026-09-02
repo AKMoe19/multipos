@@ -15,7 +15,7 @@ const Category = require('./models/Category');
 
 const app = express();
 
-// MongoDB Connection (.env ဖိုင်ထဲမှ MONGO_URI ကို အသုံးပြုခြင်း)
+// MongoDB Connection Cloud or Localhost
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/multi_tenant_pos';
 
 mongoose.connect(mongoURI)
@@ -149,7 +149,7 @@ app.post('/admin/users/add', isAuth, isAdmin, async (req, res) => {
             return res.render('users', { 
                 user: req.session.user, 
                 cashiers, 
-                error: 'ဒီ Username ကို သုံးထားပြီး ဖြစ်ပါသည်။ အခြား Username ပြောင်းပေးပါ။',
+                error: 'ဒီ User Name ကို သုံးထားပြီး ဖြစ်ပါသည်။ အခြား User Name ပြောင်းပေးပါ။',
                 success: null 
             });
         }
@@ -384,19 +384,120 @@ app.get('/pos', isAuth, async (req, res) => {
 });
 
 // Checkout Route
+// app.post('/pos/checkout', isAuth, async (req, res) => {
+//     const tenantId = req.session.user.tenantId;
+//     const { items, totalAmount, total, subtotal, discount, taxAmount, paymentMethod, paidAmount, changeAmount } = req.body;
+
+//     const finalTotal = totalAmount || total || 0;
+
+//     try {
+//         if (!items || !Array.isArray(items) || items.length === 0) {
+//             return res.status(400).json({ success: false, message: 'Cart ထဲတွင် ပစ္စည်းမရှိပါ။' });
+//         }
+
+//         const saleItems = [];
+
+//         for (const item of items) {
+//             const productId = item.id || item._id;
+//             const quantity = Number(item.quantity || item.qty || 0);
+
+//             const product = await Product.findOne({ _id: productId, tenantId });
+
+//             if (!product) {
+//                 return res.status(404).json({ 
+//                     success: false, 
+//                     message: `Product မတွေ့ရှိပါ။: ${item.name || ''}` 
+//                 });
+//             }
+
+//             if (product.stock >= quantity) {
+//                 product.stock -= quantity;
+//                 await product.save();
+
+//                 saleItems.push({
+//                     productId: product._id,
+//                     name: product.name,
+//                     price: product.price,
+//                     quantity: quantity,
+//                     subtotal: product.price * quantity
+//                 });
+//             } else {
+//                 return res.status(400).json({ 
+//                     success: false, 
+//                     message: `Stock မလုံလောက်ပါ: ${product.name}` 
+//                 });
+//             }
+//         }
+
+//         await Sale.create({
+//             tenantId,
+//             items: saleItems,
+//             totalAmount: finalTotal,
+//             subtotal: Number(subtotal) || 0,
+//             discount: Number(discount) || 0,
+//             taxAmount: Number(taxAmount) || 0,
+//             paymentMethod: paymentMethod || 'Cash',
+//             paidAmount: Number(paidAmount) || 0,
+//             changeAmount: Number(changeAmount) || 0,
+//             cashierName: req.session.user.username
+//         });
+
+//         res.json({ success: true, message: 'ရောင်းချမှု အောင်မြင်ပါသည်။' });
+
+//     } catch (err) {
+//         console.error("Checkout Error:", err);
+//         res.status(500).json({ success: false, message: 'Server Error' });
+//     }
+// });
+
+// POS Checkout Controller (app.js သို့မဟုတ် routes/pos.js)
+// app.post('/pos/checkout', async (req, res) => {
+//     try {
+//         const { items, subtotal, discount, taxAmount, totalAmount, paymentMethod, paidAmount, changeAmount } = req.body;
+
+//         // ၁။ Order မှတ်တမ်းအသစ် သိမ်းဆည်းခြင်း
+//         const newOrder = new Order({
+//             tenantId: req.user.tenantId,
+//             items,
+//             subtotal,
+//             discount,
+//             taxAmount,
+//             totalAmount,
+//             paymentMethod,
+//             paidAmount,
+//             changeAmount
+//         });
+//         await newOrder.save();
+
+//         // ၂။ Product Stock အရေအတွက် လျှော့ချခြင်း
+//         for (let item of items) {
+//             await Product.findByIdAndUpdate(item.id || item._id, {
+//                 $inc: { stock: - (item.quantity || item.qty) }
+//             });
+//         }
+
+//         res.json({ success: true, message: "ရောင်းချမှု အောင်မြင်ပါသည်။" });
+//     } catch (err) {
+//         console.error("Checkout Error:", err);
+//         res.status(500).json({ success: false, message: "Server Error" });
+//     }
+// });
+
+// Checkout Route (အရောင်းမှတ်တမ်း သိမ်းဆည်းခြင်း နှင့် Stock လျှော့ခြင်း)
 app.post('/pos/checkout', isAuth, async (req, res) => {
-    const tenantId = req.session.user.tenantId;
-    const { items, totalAmount, total, subtotal, discount, taxAmount, paymentMethod, paidAmount, changeAmount } = req.body;
-
-    const finalTotal = totalAmount || total || 0;
-
     try {
+        const tenantId = req.session.user.tenantId;
+        const { items, totalAmount, total, subtotal, discount, taxAmount, paymentMethod, paidAmount, changeAmount } = req.body;
+
+        const finalTotal = totalAmount || total || 0;
+
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ success: false, message: 'Cart ထဲတွင် ပစ္စည်းမရှိပါ။' });
         }
 
         const saleItems = [];
 
+        // 1. Stock စစ်ဆေးခြင်းနှင့် ရောင်းမည့် စာရင်း ပြင်ဆင်ခြင်း
         for (const item of items) {
             const productId = item.id || item._id;
             const quantity = Number(item.quantity || item.qty || 0);
@@ -410,26 +511,28 @@ app.post('/pos/checkout', isAuth, async (req, res) => {
                 });
             }
 
-            if (product.stock >= quantity) {
-                product.stock -= quantity;
-                await product.save();
-
-                saleItems.push({
-                    productId: product._id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: quantity,
-                    subtotal: product.price * quantity
-                });
-            } else {
+            if (product.stock < quantity) {
                 return res.status(400).json({ 
                     success: false, 
                     message: `Stock မလုံလောက်ပါ: ${product.name}` 
                 });
             }
+
+            // Stock လျှော့ချခြင်း
+            product.stock -= quantity;
+            await product.save();
+
+            saleItems.push({
+                productId: product._id,
+                name: product.name,
+                price: product.price,
+                quantity: quantity,
+                subtotal: product.price * quantity
+            });
         }
 
-        await Sale.create({
+        // 2. Sale Model တွင် အရောင်းမှတ်တမ်း သိမ်းဆည်းခြင်း
+        const newSale = await Sale.create({
             tenantId,
             items: saleItems,
             totalAmount: finalTotal,
@@ -442,11 +545,60 @@ app.post('/pos/checkout', isAuth, async (req, res) => {
             cashierName: req.session.user.username
         });
 
-        res.json({ success: true, message: 'ရောင်းချမှု အောင်မြင်ပါသည်။' });
+        res.json({ 
+            success: true, 
+            message: 'ရောင်းချမှု အောင်မြင်ပါသည်။',
+            saleId: newSale._id 
+        });
 
     } catch (err) {
         console.error("Checkout Error:", err);
         res.status(500).json({ success: false, message: 'Server Error' });
+    }
+});
+
+// History List Route ( Sale Model ဖြင့် ပြန်လည်ပြသခြင်း )
+app.get('/history', isAuth, async (req, res) => {
+    try {
+        const tenantId = req.session.user.tenantId;
+        const { search, paymentMethod, startDate, endDate } = req.query;
+
+        let query = { tenantId };
+
+        // Payment Filter
+        if (paymentMethod && paymentMethod !== 'ALL') {
+            query.paymentMethod = paymentMethod;
+        }
+
+        // Date Range Filter
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                let end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        let orders = await Sale.find(query).sort({ createdAt: -1 });
+
+        // Search Filter
+        if (search) {
+            orders = orders.filter(o => 
+                o._id.toString().toLowerCase().includes(search.toLowerCase()) ||
+                (o.cashierName && o.cashierName.toLowerCase().includes(search.toLowerCase()))
+            );
+        }
+
+        res.render('history', {
+            orders,
+            filters: { search, paymentMethod, startDate, endDate },
+            user: req.session.user
+        });
+    } catch (err) {
+        console.error("History Fetch Error:", err);
+        res.status(500).send("Server Error");
     }
 });
 
