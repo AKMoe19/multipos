@@ -178,7 +178,15 @@ function showOrderDetail(orderJson) {
     const order = JSON.parse(orderJson);
     
     document.getElementById('modalVoucherId').innerText = '#' + order._id.substring(18, 24).toUpperCase();
-    document.getElementById('modalDate').innerText = new Date(order.createdAt).toLocaleString();
+    document.getElementById('modalDate').innerText = new Date(order.createdAt).toLocaleString('en-GB', {
+        timeZone: 'Asia/Yangon',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
     document.getElementById('modalPayment').innerText = order.paymentMethod;
 
     let itemsHtml = '';
