@@ -1,0 +1,209 @@
+<%- include('partials/navbar') %>
+<%- include('partials/header') %>
+
+<div class="container-fluid px-2 px-md-4 my-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+        <h4 class="fw-bold mb-0"><i class="fas fa-history me-2"></i> Sales History (အရောင်းမှတ်တမ်း)</h4>
+        <div>
+            <a href="/pos" class="btn btn-outline-info btn-sm fw-bold"><i class="fas fa-cash-register me-1"></i> POS View</a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-3">
+            <form action="/history" method="GET" class="row g-2 align-items-end">
+                <!-- Search Input -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-bold">Search (Voucher No / Customer)</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Voucher ID သို့မဟုတ် ရှာလိုသည်များ..." value="<%= filters.search || '' %>">
+                    </div>
+                </div>
+
+                <!-- Payment Method Filter -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold">Payment Method</label>
+                    <select name="paymentMethod" class="form-select form-select-sm">
+                        <option value="ALL">All Methods</option>
+                        <option value="Cash" <%= filters.paymentMethod === 'Cash' ? 'selected' : '' %>>Cash</option>
+                        <option value="KPay" <%= filters.paymentMethod === 'KPay' ? 'selected' : '' %>>KPay</option>
+                        <option value="WavePay" <%= filters.paymentMethod === 'WavePay' ? 'selected' : '' %>>WavePay</option>
+                        <option value="MMQR" <%= filters.paymentMethod === 'MMQR' ? 'selected' : '' %>>MMQR</option>
+                        <option value="Banking" <%= filters.paymentMethod === 'Banking' ? 'selected' : '' %>>Banking</option>
+                    </select>
+                </div>
+
+                <!-- Date Range Filters -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold">From Date</label>
+                    <input type="date" name="startDate" class="form-control form-control-sm" value="<%= filters.startDate || '' %>">
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-bold">To Date</label>
+                    <input type="date" name="endDate" class="form-control form-control-sm" value="<%= filters.endDate || '' %>">
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="col-6 col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold"><i class="fas fa-filter me-1"></i> Filter</button>
+                    <a href="/history" class="btn btn-outline-secondary btn-sm w-100 fw-bold">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order History Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Voucher ID</th>
+                        <th>Date & Time</th>
+                        <th>Payment</th>
+                        <th>Items Qty</th>
+                        <th>Total Amount</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(orders.length === 0) { %>
+                        <tr><td colspan="6" class="text-center text-muted py-4">အရောင်းမှတ်တမ်း မရှိသေးပါ။</td></tr>
+                    <% } %>
+                    <% orders.forEach(o => { %>
+                        <tr>
+                            <td class="fw-bold text-primary">#<%= o._id.toString().substring(18, 24).toUpperCase() %></td>
+                            <td class="small">
+                                <%= new Date(o.createdAt).toLocaleDateString('en-GB') %> 
+                                <span class="text-muted"><%= new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span>
+                            </td>
+                            <!-- <td><span class="badge bg-info text-dark"><%= o.paymentMethod || "Cash" %></span></td> -->
+                            <td>
+                                <% 
+                                    let badgeClass = 'bg-secondary';
+                                    if (o.paymentMethod === 'Cash') badgeClass = 'bg-success';
+                                    else if (o.paymentMethod === 'KPay') badgeClass = 'bg-primary';
+                                    else if (o.paymentMethod === 'WavePay') badgeClass = 'bg-warning text-dark';
+                                    else if (o.paymentMethod === 'MMQR') badgeClass = 'bg-secondary text-dark';
+                                    else if (o.paymentMethod === 'Banking') badgeClass = 'bg-dark';
+                                %>
+                                <span class="badge <%= badgeClass %>"><%= o.paymentMethod || 'Cash' %></span>
+                            </td>
+                            <td><%= o.items.reduce((sum, item) => sum + item.quantity, 0) %></td>
+                            <td class="fw-bold text-success"><%= o.totalAmount ? o.totalAmount.toLocaleString() : (o.total || 0).toLocaleString() %> MMK</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary fw-bold" onclick="showOrderDetail('<%= JSON.stringify(o) %>')">
+                                    <i class="fas fa-eye me-1"></i> View Detail
+                                </button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice me-2"></i> Order Detail - <span id="modalVoucherId"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 p-md-4">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block">ရောင်းချသည့်ရက်စွဲ:</small>
+                        <strong id="modalDate"></strong>
+                    </div>
+                    <div class="col-6 text-end">
+                        <small class="text-muted d-block">Payment Method:</small>
+                        <span id="modalPayment" class="badge bg-info text-dark fs-6"></span>
+                    </div>
+                </div>
+
+                <!-- Purchased Items Table -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product Name</th>
+                                <th class="text-center">Price</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalItemsBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Financial Calculation -->
+                <div class="row justify-content-end">
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Subtotal:</span>
+                            <span id="modalSubtotal">0 MMK</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-1 text-danger">
+                            <span>Discount:</span>
+                            <span id="modalDiscount">-0 MMK</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Tax Amount:</span>
+                            <span id="modalTax">0 MMK</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between fw-bold fs-5 text-success">
+                            <span>Total Amount:</span>
+                            <span id="modalTotal">0 MMK</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showOrderDetail(orderJson) {
+    const order = JSON.parse(orderJson);
+    
+    document.getElementById('modalVoucherId').innerText = '#' + order._id.substring(18, 24).toUpperCase();
+    document.getElementById('modalDate').innerText = new Date(order.createdAt).toLocaleString();
+    document.getElementById('modalPayment').innerText = order.paymentMethod;
+
+    let itemsHtml = '';
+    order.items.forEach(item => {
+        const itemPrice = item.price || 0;
+        const itemQty = item.quantity || item.qty || 1;
+        itemsHtml += `
+            <tr>
+                <td class="fw-bold">${item.name}</td>
+                <td class="text-center">${itemPrice.toLocaleString()} MMK</td>
+                <td class="text-center">${itemQty}</td>
+                <td class="text-end fw-bold">${(itemPrice * itemQty).toLocaleString()} MMK</td>
+            </tr>
+        `;
+    });
+    document.getElementById('modalItemsBody').innerHTML = itemsHtml;
+
+    const totalVal = order.totalAmount || order.total || 0;
+    document.getElementById('modalSubtotal').innerText = (order.subtotal || totalVal).toLocaleString() + ' MMK';
+    document.getElementById('modalDiscount').innerText = '-' + (order.discount || 0).toLocaleString() + ' MMK';
+    document.getElementById('modalTax').innerText = (order.taxAmount || 0).toLocaleString() + ' MMK';
+    document.getElementById('modalTotal').innerText = totalVal.toLocaleString() + ' MMK';
+
+    const detailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+    detailModal.show();
+}
+</script>
+
+<%- include('partials/footer') %>
