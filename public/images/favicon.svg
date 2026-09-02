@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F4F7F6" />
+    </linearGradient>
+
+    <!-- Emerald Green Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <!-- Dark Navy Gradient -->
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <!-- Receipt Highlight Gradient -->
+    <linearGradient id="receiptGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <!-- Drop Shadow for Logo Mark -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bgGrad)" />
+
+  <g transform="translate(100, 110)">
+    <!-- ================= LOGO MARK ================= -->
+    <g filter="url(#dropShadow)">
+      <!-- Outer Shopping Cart Frame (Dark Navy) -->
+      <path d="M 40,40 
+               L 85,40 
+               C 95,40 102,46 105,55 
+               L 135,145 
+               C 138,154 146,160 156,160 
+               L 260,160 
+               C 270,160 278,153 280,143 
+               L 295,70 
+               C 297,60 289,50 278,50 
+               L 125,50" 
+            fill="none" 
+            stroke="url(#navyGrad)" 
+            stroke-width="16" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" />
+
+      <!-- Cart Wheels -->
+      <circle cx="160" cy="195" r="14" fill="url(#emeraldGrad)" />
+      <circle cx="255" cy="195" r="14" fill="url(#emeraldGrad)" />
+
+      <!-- Smart POS Screen / Register Body (Emerald Green & Navy Integration) -->
+      <!-- POS Terminal Base Frame inside the Basket -->
+      <rect x="145" y="75" width="110" height="70" rx="10" fill="url(#navyGrad)" />
+      
+      <!-- POS Screen Display -->
+      <rect x="152" y="82" width="96" height="56" rx="6" fill="#FFFFFF" opacity="0.95" />
+      
+      <!-- Screen Details (Chart & Total) -->
+      <rect x="160" y="92" width="40" height="6" rx="3" fill="#0F172A" />
+      <rect x="160" y="104" width="28" height="6" rx="3" fill="#94A3B8" />
+      
+      <!-- Growth Bar Chart on Screen -->
+      <rect x="210" y="112" width="6" height="14" rx="2" fill="#10B981" />
+      <rect x="220" y="102" width="6" height="24" rx="2" fill="#10B981" />
+      <rect x="230" y="94" opacity="0.3" width="6" height="32" rx="2" fill="#10B981" />
+
+      <!-- Dynamic Digital Receipt / Arrow Moving Upwards -->
+      <g transform="translate(0, -10)">
+        <!-- Receipt Body -->
+        <path d="M 180,30 
+                 L 220,30 
+                 L 220,75 
+                 L 213,70 
+                 L 200,75 
+                 L 187,70 
+                 L 180,75 Z" 
+              fill="url(#receiptGrad)" />
+        
+        <!-- Receipt Lines -->
+        <line x1="188" y1="42" x2="212" y2="42" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+        <line x1="188" y1="52" x2="204" y2="52" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+        
+        <!-- Fast Transaction Indicator (Top Arrow Tip) -->
+        <path d="M 200,12 L 212,26 L 188,26 Z" fill="#10B981" />
+      </g>
+    </g>
+
+    <!-- ================= TYPOGRAPHY ================= -->
+    <!-- Main Brand Name -->
+    <text x="340" y="130" font-family="'Inter', 'Montserrat', 'Segoe UI', sans-serif" font-weight="800" font-size="64" fill="url(#navyGrad)" letter-spacing="-1">
+      RETAIL<tspan fill="url(#emeraldGrad)">POS</tspan>
+    </text>
+
+    <!-- Tagline / Descriptor -->
+    <text x="345" y="168" font-family="'Inter', 'Segoe UI', sans-serif" font-weight="600" font-size="18" fill="#64748B" letter-spacing="4.5">
+      SMART CHECKOUT SOFTWARE
+    </text>
+
+    <!-- Decorative Accent Line below Tagline -->
+    <rect x="345" y="185" width="60" height="4" rx="2" fill="url(#emeraldGrad)" />
+  </g>
+</svg>
