@@ -77,10 +77,11 @@
                         <tr>
                             <td class="fw-bold text-primary">#<%= o._id.toString().substring(18, 24).toUpperCase() %></td>
                             <td class="small">
-                                <%= new Date(o.createdAt).toLocaleDateString('en-GB') %> 
-                                <span class="text-muted"><%= new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span>
+                                <%= new Date(o.createdAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Yangon' }) %> 
+                                <span class="text-muted">
+                                    <%= new Date(o.createdAt).toLocaleTimeString('en-US', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit', hour12: true }) %>
+                                </span>
                             </td>
-                            <!-- <td><span class="badge bg-info text-dark"><%= o.paymentMethod || "Cash" %></span></td> -->
                             <td>
                                 <% 
                                     let badgeClass = 'bg-secondary';
