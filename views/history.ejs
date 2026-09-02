@@ -108,7 +108,6 @@
     </div>
 </div>
 
-<!-- Order Detail Modal -->
 <div class="modal fade" id="orderDetailModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
@@ -116,8 +115,10 @@
                 <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice me-2"></i> Order Detail - <span id="modalVoucherId"></span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-3 p-md-4">
-                <div class="row mb-3">
+            
+            <!-- Printable Area Start (ဒီအစိတ်ပိုင်းတစ်ခုလုံးကို Print ထုတ်ပါမည်) -->
+            <div class="modal-body p-3 p-md-4" id="printableVoucher">
+                <div class="row mb-3 align-items-center">
                     <div class="col-6">
                         <small class="text-muted d-block">ရောင်းချသည့်ရက်စွဲ:</small>
                         <strong id="modalDate"></strong>
@@ -130,7 +131,7 @@
 
                 <!-- Purchased Items Table -->
                 <div class="table-responsive mb-3">
-                    <table class="table table-bordered align-middle">
+                    <table class="table table-bordered align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Product Name</th>
@@ -143,8 +144,15 @@
                     </table>
                 </div>
 
-                <!-- Financial Calculation -->
-                <div class="row justify-content-end">
+                <!-- Financial Calculation & Shop Logo Section -->
+                <div class="row align-items-center mt-3">
+                    <!-- မြှားပြထားသော ဘယ်ဘက်နေရာတွင် ဆိုင် Logo ပုံထည့်သွင်းခြင်း -->
+                    <div class="col-12 col-md-6 mb-3 mb-md-0 text-center text-md-start">
+                        <img src="/images/favicon.svg" alt="Shop Logo" class="img-fluid" style="max-height: 80px; opacity: 0.9;" id="modalShopLogo">
+                        <div class="small text-muted mt-1">Thank you for shopping with us!</div>
+                    </div>
+
+                    <!-- ညာဘက် ငွေတွက်ချက်မှု အပိုင်း -->
                     <div class="col-12 col-md-6">
                         <div class="d-flex justify-content-between small mb-1">
                             <span>Subtotal:</span>
@@ -166,7 +174,13 @@
                     </div>
                 </div>
             </div>
+            <!-- Printable Area End -->
+
             <div class="modal-footer bg-light">
+                <!-- Print Button -->
+                <button type="button" class="btn btn-outline-primary fw-bold" onclick="printVoucher()">
+                    <i class="fas fa-print me-1"></i> Print Voucher
+                </button>
                 <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -213,6 +227,41 @@ function showOrderDetail(orderJson) {
     const detailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
     detailModal.show();
 }
+
+// Voucher ကို သီးသန့် Print ထုတ်မည့် Function
+function printVoucher() {
+    const printContent = document.getElementById('printableVoucher').innerHTML;
+    const voucherId = document.getElementById('modalVoucherId').innerText;
+
+    // Print ရိုက်ရန် Window အသစ်တစ်ခု ဖွင့်ခြင်း
+    const printWindow = window.open('', '', 'height=650,width=900');
+    
+    printWindow.document.write('<html><head><title>Voucher - ' + voucherId + '</title>');
+    // Bootstrap CSS ကို ပါဝင်အောင် ထည့်သွင်းခြင်း
+    printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">');
+    printWindow.document.write('<style>');
+    printWindow.document.write(`
+        body { font-family: sans-serif; padding: 20px; background: #fff; }
+        .badge { border: 1px solid #6c757d; color: #000 !important; background: transparent !important; }
+        @media print {
+            .btn, .btn-close { display: none !important; }
+        }
+    `);
+    printWindow.document.write('</style></head><body>');
+    printWindow.document.write('<h4 class="text-center fw-bold mb-3">RECEIPT / VOUCHER</h4>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+
+    printWindow.document.close();
+    
+    // Image များနှင့် Style များ Load လုပ်ပြီးမှ Print dialog ပွင့်ရန်
+    printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    };
+}
+
 </script>
 
 <%- include('partials/footer') %>
