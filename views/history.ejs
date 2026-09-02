@@ -66,6 +66,7 @@
                         <th>Payment</th>
                         <th>Items Qty</th>
                         <th>Total Amount</th>
+                        <th>Sold By</th>
                         <th class="text-end">Action</th>
                     </tr>
                 </thead>
@@ -95,6 +96,12 @@
                             </td>
                             <td><%= o.items.reduce((sum, item) => sum + item.quantity, 0) %></td>
                             <td class="fw-bold text-success"><%= o.totalAmount ? o.totalAmount.toLocaleString() : (o.total || 0).toLocaleString() %> MMK</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="fas fa-user-tag me-1 text-primary"></i>
+                                    <%= o.cashierName || 'Admin' %>
+                                </span>
+                            </td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-primary fw-bold" onclick="showOrderDetail('<%= JSON.stringify(o) %>')">
                                     <i class="fas fa-eye me-1"></i> View Detail
@@ -223,6 +230,7 @@ function showOrderDetail(orderJson) {
     document.getElementById('modalDiscount').innerText = '-' + (order.discount || 0).toLocaleString() + ' MMK';
     document.getElementById('modalTax').innerText = (order.taxAmount || 0).toLocaleString() + ' MMK';
     document.getElementById('modalTotal').innerText = totalVal.toLocaleString() + ' MMK';
+    document.getElementById('modalCashier').innerText = order.cashierName || 'Admin';
 
     const detailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
     detailModal.show();
