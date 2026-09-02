@@ -230,7 +230,7 @@ function showOrderDetail(orderJson) {
     document.getElementById('modalDiscount').innerText = '-' + (order.discount || 0).toLocaleString() + ' MMK';
     document.getElementById('modalTax').innerText = (order.taxAmount || 0).toLocaleString() + ' MMK';
     document.getElementById('modalTotal').innerText = totalVal.toLocaleString() + ' MMK';
-    document.getElementById('modalCashier').innerText = order.cashierName || 'Admin';
+    // document.getElementById('modalCashier').innerText = order.cashierName || 'Admin'; // ဒါပါရင် Modal အလုပ်မလုပ်
 
     const detailModal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
     detailModal.show();
