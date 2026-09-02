@@ -1,6 +1,7 @@
+<%- include('partials/navbar') %>
 <%- include('partials/header') %>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-3">
+<!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-3">
     <div class="container-fluid px-4">
         <span class="navbar-brand fw-bold"><i class="fas fa-shopping-cart me-2"></i> POS - <%= user.username %> (<%= user.role %>)</span>
         <div>
@@ -10,29 +11,29 @@
             <a href="/logout" class="btn btn-outline-light btn-sm"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
         </div>
     </div>
-</nav>
+</nav> -->
 
-<div class="container-fluid px-4">
-    <div class="row">
+<div class="container-fluid px-2 px-md-4 py-2">
+    <div class="row g-3">
         <!-- Left: Product List & Filters -->
-        <div class="col-md-7 col-lg-8">
+        <div class="col-12 col-lg-7 col-xl-8">
             
             <!-- Search Bar & Category Filters -->
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-body p-3">
+                <div class="card-body p-2 p-md-3">
                     <div class="row g-2">
                         <!-- Search Input -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
                                 <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by Product Name or Barcode..." oninput="debounceSearch()">
                             </div>
                         </div>
                         
-                        <!-- Category Filter Buttons -->
-                        <div class="col-md-6 d-flex gap-1 overflow-auto align-items-center">
+                        <!-- Category Filter Buttons (Horizontal Scroll on Mobile) -->
+                        <div class="col-12 col-md-6 d-flex gap-2 overflow-auto align-items-center py-1" style="white-space: nowrap;">
                             <% categories.forEach(cat => { %>
-                                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 cat-btn <%= cat === 'ALL' ? 'active' : '' %>" onclick="filterCategory('<%= cat %>', this)"><%= cat %></button>
+                                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 cat-btn flex-shrink-0 <%= cat === 'ALL' ? 'active' : '' %>" onclick="filterCategory('<%= cat %>', this)"><%= cat %></button>
                             <% }) %>
                         </div>
                     </div>
@@ -41,47 +42,20 @@
 
             <!-- Products List Table -->
             <div class="card border-0 shadow-sm">
-                <div class="card-body p-0" style="max-height: 520px; overflow-y: auto;">
+                <!-- Added table-responsive for horizontal scrolling on mobile -->
+                <div class="card-body p-0 table-responsive" style="max-height: 520px; overflow-y: auto;">
                     <table class="table table-hover align-middle mb-0" id="productTable">
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th style="width: 70px;">Image</th>
                                 <th>Product Name</th>
-                                <th>Category</th>
+                                <!-- Category is hidden on small screens to save space -->
+                                <th class="d-none d-md-table-cell">Category</th>
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th class="text-end" style="width: 100px;">Action</th>
                             </tr>
                         </thead>
-                        <!-- <tbody id="productTableBody">
-                            <% if(products.length === 0) { %>
-                                <tr><td colspan="6" class="text-center text-muted py-4">No products available...</td></tr>
-                            <% } %>
-                            <% products.forEach(p => { %>
-                                <tr>
-                                    <td>
-                                        <img src="<%= p.image || '/images/default-product.png' %>" width="45" height="45" class="rounded object-fit-cover">
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-dark"><%= p.name %></div>
-                                        <% if(p.barcode) { %>
-                                            <small class="text-muted"><i class="fas fa-barcode me-1"></i><%= p.barcode %></small>
-                                        <% } %>
-                                    </td>
-                                    <td><span class="badge bg-info text-dark"><%= p.category %></span></td>
-                                    <td class="fw-bold text-primary"><%= p.price %> MMK</td>
-                                    <td>
-                                        <span class="badge <%= p.stock < 5 ? 'bg-danger' : 'bg-success' %>"><%= p.stock %></span>
-                                    </td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-primary fw-bold" onclick="addToCart('<%= p._id %>', '<%= p.name.replace(/'/g, "\\'") %>', <%= p.price %>, <%= p.stock %>)">
-                                            <i class="fas fa-plus me-1"></i>Add
-                                        </button>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody> -->
-
                         <tbody id="productTableBody">
                             <% if(products.length === 0) { %>
                                 <tr><td colspan="6" class="text-center text-muted py-4">No products available...</td></tr>
@@ -94,16 +68,15 @@
                                     <td>
                                         <div class="fw-bold text-dark"><%= p.name %></div>
                                         <% if(p.barcode) { %>
-                                            <small class="text-muted"><i class="fas fa-barcode me-1"></i><%= p.barcode %></small>
+                                            <small class="text-muted d-block"><i class="fas fa-barcode me-1"></i><%= p.barcode %></small>
                                         <% } %>
                                     </td>
-                                    <td><span class="badge bg-info text-dark"><%= p.category %></span></td>
+                                    <td class="d-none d-md-table-cell"><span class="badge bg-info text-dark"><%= p.category %></span></td>
                                     <td class="fw-bold text-primary"><%= p.price %> MMK</td>
                                     <td>
-                                        <!-- Stock ၅ ခုနဲ့ ၅ ခုအောက်ဆိုပါက အနီရောင် Flash Badge နှင့် Warning စာတမ်း ပြသမည် -->
                                         <% if(p.stock <= 5) { %>
                                             <span class="badge bg-danger fs-6 px-2 py-1"><%= p.stock %></span>
-                                            <small class="text-danger fw-bold d-block style="font-size: 0.75rem;"><i class="fas fa-exclamation-circle me-1"></i>Reorder</small>
+                                            <small class="text-danger fw-bold d-block" style="font-size: 0.75rem;"><i class="fas fa-exclamation-circle me-1"></i>Reorder</small>
                                         <% } else { %>
                                             <span class="badge bg-success fs-6 px-2 py-1"><%= p.stock %></span>
                                         <% } %>
@@ -123,8 +96,9 @@
         </div>
 
         <!-- Right: Cart System -->
-        <div class="col-md-5 col-lg-4">
-            <div class="card border-0 shadow-sm">
+        <div class="col-12 col-lg-5 col-xl-4">
+            <!-- Added sticky-lg-top so cart stays visible on desktop scroll -->
+            <div class="card border-0 shadow-sm sticky-lg-top" style="top: 15px;">
                 <div class="card-header bg-white fw-bold py-3 d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-receipt me-2"></i> Current Order</span>
                     <button class="btn btn-sm btn-outline-danger px-3" onclick="clearCart()">Clear</button>
@@ -188,7 +162,7 @@
                 <h5 class="modal-title fw-bold"><i class="fas fa-cash-register me-2"></i> Payment</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4">
+            <div class="modal-body p-3 p-md-4">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Payment Type</label>
                     <select id="paymentMethod" class="form-select" onchange="toggleCashInput()">
@@ -272,19 +246,20 @@ function renderProductTable(products) {
             ? `<img src="${p.image}" width="45" height="45" class="rounded object-fit-cover">`
             : `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;"><i class="fas fa-box text-muted"></i></div>`;
 
-        const barcodeHtml = p.barcode ? `<small class="text-muted"><i class="fas fa-barcode me-1"></i>${p.barcode}</small>` : '';
+        const barcodeHtml = p.barcode ? `<small class="text-muted d-block"><i class="fas fa-barcode me-1"></i>${p.barcode}</small>` : '';
 
         html += `
-            <tr>
+            <tr class="${p.stock <= 5 ? 'table-warning' : ''}">
                 <td>${imageHtml}</td>
                 <td>
                     <div class="fw-bold text-dark">${p.name}</div>
                     ${barcodeHtml}
                 </td>
-                <td><span class="badge bg-info text-dark">${p.category}</span></td>
+                <td class="d-none d-md-table-cell"><span class="badge bg-info text-dark">${p.category}</span></td>
                 <td class="fw-bold text-primary">${p.price} MMK</td>
                 <td>
-                    <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-success'}">${p.stock}</span>
+                    <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-success'} fs-6 px-2 py-1">${p.stock}</span>
+                    ${p.stock <= 5 ? `<small class="text-danger fw-bold d-block" style="font-size: 0.75rem;"><i class="fas fa-exclamation-circle me-1"></i>Reorder</small>` : ''}
                 </td>
                 <td class="text-end">
                     <button class="btn btn-sm btn-primary fw-bold" onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, ${p.stock})">
@@ -472,7 +447,8 @@ async function confirmPayment() {
             const modalInstance = bootstrap.Modal.getInstance(modalElem);
             if (modalInstance) modalInstance.hide();
             
-            location.reload();
+            // location.reload();
+            window.location.href = '/history';
         } else {
             alert(resData.message || "Checkout ပြုလုပ်ခြင်း မအောင်မြင်ပါ။");
         }

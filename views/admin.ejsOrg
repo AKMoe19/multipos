@@ -1,0 +1,310 @@
+<%- include('partials/navbar') %>
+<%- include('partials/header') %>
+
+<!-- Navbar -->
+<!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/admin"><i class="fa-solid fa-layer-group me-2"></i> Admin Panel (<%= user.username %>)</a>
+        <div class="navbar-nav ms-auto d-flex flex-row gap-2">
+            <a href="/admin/users" class="btn btn-outline-warning btn-sm"><i class="fas fa-users-cog me-1"></i> Cashiers</a>
+            <a href="/pos" class="btn btn-outline-info btn-sm"><i class="fas fa-cash-register me-1"></i> POS View</a>
+            <a href="/logout" class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+        </div>
+    </div>
+</nav> -->
+
+<div class="container my-4">
+
+    <!-- Stock နည်းနေပါက သတိပေး Alert Box ပြသရန် -->
+    <% if (typeof lowStockProducts !== 'undefined' && lowStockProducts.length > 0) { %>
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm border-warning mb-4" role="alert">
+            <h5 class="alert-heading fw-bold text-dark mb-1">
+                <i class="fas fa-exclamation-triangle text-danger me-2"></i> Stock နည်းနေသောပစ္စည်းများ ရှိနေပါသည်။ (<%= lowStockProducts.length %>) မျိုး
+            </h5>
+            <hr class="my-2">
+            <div class="d-flex flex-wrap gap-2">
+                <% lowStockProducts.forEach(lp => { %>
+                    <span class="badge bg-danger p-2 fs-6">
+                        <%= lp.name %> - Stock : <%= lp.stock %>
+                    </span>
+                <% }) %>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold"><i class="fa-solid fa-barcode me-2"></i> Product Management</h4>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary fw-bold" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="fas fa-tags me-1"></i> Categories</button>
+            <a href="/admin/backup-data" class="btn btn-outline-success fw-bold"><i class="fas fa-download me-1"></i> Backup</a>
+            <button class="btn btn-outline-warning fw-bold" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-upload me-1"></i> Import</button>
+            <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addProductModal"><i class="fas fa-plus-circle me-1"></i> Add Product</button>
+        </div>
+    </div>
+
+    <!-- Product Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Image</th>
+                        <th>Barcode</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>ဝယ်ဈေး</th>
+                        <th>ရောင်းဈေး</th>
+                        <th class="text-success">အမြတ်ငွေ</th>
+                        <th>Stock</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(products.length === 0) { %>
+                        <tr><td colspan="9" class="text-center text-muted py-4">ပစ္စည်းစာရင်း မရှိသေးပါ။</td></tr>
+                    <% } %>
+                    <% products.forEach(p => { %>
+                        <tr>
+                            <td>
+                                <img src="<%= p.image || '/images/default-product.png' %>" onerror="this.src='/images/default-product.png';" width="45" height="45" class="rounded object-fit-cover">
+                            </td>
+                            <td><code><%= p.barcode || '-' %></code></td>
+                            <td class="fw-bold"><%= p.name %></td>
+                            <td><span class="badge bg-info text-dark"><%= p.category %></span></td>
+                            <td class="text-danger fw-bold"><%= p.costPrice || 0 %> MMK</td>
+                            <td class="text-primary fw-bold"><%= p.price %> MMK</td>
+                            <td class="text-success fw-bold">
+                                <%= (p.price - (p.costPrice || 0)) %> MMK
+                            </td>
+                            <td>
+                                <% if (p.stock === 0) { %>
+                                    <span class="badge bg-danger text-white px-2 py-1">Out of Stock</span>
+                                <% } else if (p.stock <= 5) { %>
+                                    <span class="badge bg-warning text-dark px-2 py-1"><i class="fas fa-exclamation-circle me-1"></i> Low Stock (<%= p.stock %>)</span>
+                                <% } else { %>
+                                    <span class="badge bg-success px-2 py-1"><%= p.stock %></span>
+                                <% } %>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="quickAddStock('<%= p._id %>', '<%= p.name %>', '<%= p.stock %>')">
+                                    <i class="fas fa-plus"></i> Stock
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#editProductModal<%= p._id %>">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="/admin/delete-product/<%= p._id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ဖျက်မှာ သေချာပါသလား?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Edit Product Modal -->
+                        <div class="modal fade" id="editProductModal<%= p._id %>" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title fw-bold">Edit Product: <%= p.name %></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="/admin/edit-product/<%= p._id %>" method="POST" enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                            <div class="mb-2">
+                                                <label class="small fw-bold">Product Name</label>
+                                                <input type="text" name="name" class="form-control" value="<%= p.name %>" required>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="small fw-bold">Barcode</label>
+                                                <div class="input-group">
+                                                    <input type="text" id="barcodeEditInput<%= p._id %>" name="barcode" class="form-control" value="<%= p.barcode %>">
+                                                    <button type="button" class="btn btn-outline-secondary fw-bold" onclick="generateEditBarcode('<%= p._id %>')">
+                                                        <i class="fas fa-magic me-1"></i> Auto
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="small fw-bold">Category</label>
+                                                <select name="category" class="form-select">
+                                                    <option value="General" <%= p.category === 'General' ? 'selected' : '' %>>General</option>
+                                                    <% categories.forEach(c => { %>
+                                                        <option value="<%= c.name %>" <%= p.category === c.name ? 'selected' : '' %>><%= c.name %></option>
+                                                    <% }) %>
+                                                </select>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6 mb-2">
+                                                    <label class="small fw-bold text-danger">ဝယ်ဈေး (Cost Price)</label>
+                                                    <input type="number" name="costPrice" class="form-control" value="<%= p.costPrice || 0 %>" required>
+                                                </div>
+                                                <div class="col-6 mb-2">
+                                                    <label class="small fw-bold text-primary">ရောင်းဈေး (Selling Price)</label>
+                                                    <input type="number" name="price" class="form-control" value="<%= p.price %>" required>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="small fw-bold">Stock</label>
+                                                <input type="number" name="stock" class="form-control" value="<%= p.stock %>" required>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="small fw-bold">Image (မပြောင်းချင်ပါက လွတ်ထားပါ)</label>
+                                                <input type="file" name="image" class="form-control" accept="image/*">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-warning fw-bold">ပြင်ဆင်ချက်များ သိမ်းမည်</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Add New Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/add-product" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="small fw-bold">Product Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold">Barcode</label>
+                        <div class="input-group">
+                            <input type="text" id="barcodeInput" name="barcode" class="form-control" placeholder="Type Barcode here...">
+                            <button type="button" class="btn btn-outline-secondary fw-bold" onclick="generateBarcode()">
+                                <i class="fas fa-gear me-1"></i> Auto Generate
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="General">General</option>
+                            <% categories.forEach(c => { %>
+                                <option value="<%= c.name %>"><%= c.name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="small fw-bold text-danger">Cost Price</label>
+                            <input type="number" name="costPrice" class="form-control" placeholder="0" required>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="small fw-bold text-primary">Selling Price</label>
+                            <input type="number" name="price" class="form-control" placeholder="0" required>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold">Stock</label>
+                        <input type="number" name="stock" class="form-control" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold">Product Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary fw-bold">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Category Management Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Manage Categories</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/admin/add-category" method="POST" class="d-flex gap-2 mb-3">
+                    <input type="text" name="name" class="form-control" placeholder="Add New Category" required>
+                    <button type="submit" class="btn btn-success fw-bold"><i class="fas fa-plus"></i> Add</button>
+                </form>
+
+                <ul class="list-group">
+                    <% if(categories.length === 0) { %>
+                        <li class="list-group-item text-muted text-center">Category မရှိသေးပါ။</li>
+                    <% } %>
+                    <% categories.forEach(c => { %>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <%= c.name %>
+                            <a href="/admin/delete-category/<%= c._id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('ဖျက်မှာ သေချာပါသလား?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Import Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/import-data" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="file" name="backupFile" class="form-control" accept=".json" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning fw-bold">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateBarcode() {
+    const randomDigits = Math.floor(100000999 + Math.random() * 900000000);
+    document.getElementById('barcodeInput').value = 'B00' + randomDigits;
+}
+
+function generateEditBarcode(id) {
+    const randomDigits = Math.floor(100000999 + Math.random() * 900000000);
+    document.getElementById('barcodeEditInput' + id).value = 'B00' + randomDigits;
+}
+
+async function quickAddStock(productId, productName, currentStock) {
+    const addQty = prompt(`${productName} အတွက် ထပ်ဖြည့်မည့် Stock အရေအတွက် ရိုက်ထည့်ပါ:`, "");
+    if (addQty && !isNaN(addQty) && Number(addQty) > 0) {
+        const newStock = Number(currentStock) + Number(addQty);
+        
+        const response = await fetch('/admin/quick-update-stock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, stock: newStock })
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert("Stock ပြင်ဆင်ရယူခြင်း မအောင်မြင်ပါ။");
+        }
+    }
+}
+</script>
+
+<%- include('partials/footer') %>
