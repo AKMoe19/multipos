@@ -1,23 +1,12 @@
+<%- include('partials/navbar') %>
 <%- include('partials/header') %>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="/admin"><i class="fa-solid fa-layer-group me-2"></i> Admin Panel (<%= user.username %>)</a>
-        <div class="navbar-nav ms-auto d-flex flex-row gap-2">
-            <a href="/admin/users" class="btn btn-outline-warning btn-sm"><i class="fas fa-users-cog me-1"></i> Cashiers</a>
-            <a href="/pos" class="btn btn-outline-info btn-sm"><i class="fas fa-cash-register me-1"></i> POS View</a>
-            <a href="/logout" class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
-        </div>
-    </div>
-</nav>
-
-<div class="container my-4">
+<div class="container-fluid px-2 px-md-4 my-4">
 
     <!-- Stock နည်းနေပါက သတိပေး Alert Box ပြသရန် -->
     <% if (typeof lowStockProducts !== 'undefined' && lowStockProducts.length > 0) { %>
         <div class="alert alert-warning alert-dismissible fade show shadow-sm border-warning mb-4" role="alert">
-            <h5 class="alert-heading fw-bold text-dark mb-1">
+            <h5 class="alert-heading fw-bold text-dark mb-1 fs-6 fs-md-5">
                 <i class="fas fa-exclamation-triangle text-danger me-2"></i> Stock နည်းနေသောပစ္စည်းများ ရှိနေပါသည်။ (<%= lowStockProducts.length %>) မျိုး
             </h5>
             <hr class="my-2">
@@ -32,30 +21,31 @@
         </div>
     <% } %>
     
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold"><i class="fa-solid fa-barcode me-2"></i> Product Management</h4>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary fw-bold" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="fas fa-tags me-1"></i> Categories</button>
-            <a href="/admin/backup-data" class="btn btn-outline-success fw-bold"><i class="fas fa-download me-1"></i> Backup</a>
-            <button class="btn btn-outline-warning fw-bold" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-upload me-1"></i> Import</button>
-            <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addProductModal"><i class="fas fa-plus-circle me-1"></i> Add Product</button>
+    <!-- Header & Action Buttons -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+        <h4 class="fw-bold mb-0"><i class="fa-solid fa-barcode me-2"></i> Product Management</h4>
+        <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
+            <button class="btn btn-outline-secondary fw-bold flex-grow-1 flex-md-grow-0 btn-sm btn-md-md" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="fas fa-tags me-1"></i> Categories</button>
+            <a href="/admin/backup-data" class="btn btn-outline-success fw-bold flex-grow-1 flex-md-grow-0 btn-sm btn-md-md"><i class="fas fa-download me-1"></i> Backup</a>
+            <button class="btn btn-outline-warning fw-bold flex-grow-1 flex-md-grow-0 btn-sm btn-md-md" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-upload me-1"></i> Import</button>
+            <button class="btn btn-primary fw-bold flex-grow-1 flex-md-grow-0 btn-sm btn-md-md" data-bs-toggle="modal" data-bs-target="#addProductModal"><i class="fas fa-plus-circle me-1"></i> Add Product</button>
         </div>
     </div>
 
     <!-- Product Table -->
     <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
+        <!-- Responsive wrapper for horizontal scrolling on smaller screens -->
+        <div class="card-body p-0 table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th>Image</th>
-                        <th>Barcode</th>
+                        <th class="d-none d-sm-table-cell">Barcode</th>
                         <th>Name</th>
-                        <th>Category</th>
-                        <th>ဝယ်ဈေး</th>
+                        <th class="d-none d-md-table-cell">Category</th>
+                        <th class="d-none d-lg-table-cell">ဝယ်ဈေး</th>
                         <th>ရောင်းဈေး</th>
-                        <th class="text-success">အမြတ်ငွေ</th>
+                        <th class="text-success d-none d-lg-table-cell">အမြတ်ငွေ</th>
                         <th>Stock</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -69,12 +59,12 @@
                             <td>
                                 <img src="<%= p.image || '/images/default-product.png' %>" onerror="this.src='/images/default-product.png';" width="45" height="45" class="rounded object-fit-cover">
                             </td>
-                            <td><code><%= p.barcode || '-' %></code></td>
+                            <td class="d-none d-sm-table-cell"><code><%= p.barcode || '-' %></code></td>
                             <td class="fw-bold"><%= p.name %></td>
-                            <td><span class="badge bg-info text-dark"><%= p.category %></span></td>
-                            <td class="text-danger fw-bold"><%= p.costPrice || 0 %> MMK</td>
+                            <td class="d-none d-md-table-cell"><span class="badge bg-info text-dark"><%= p.category %></span></td>
+                            <td class="text-danger fw-bold d-none d-lg-table-cell"><%= p.costPrice || 0 %> MMK</td>
                             <td class="text-primary fw-bold"><%= p.price %> MMK</td>
-                            <td class="text-success fw-bold">
+                            <td class="text-success fw-bold d-none d-lg-table-cell">
                                 <%= (p.price - (p.costPrice || 0)) %> MMK
                             </td>
                             <td>
@@ -86,7 +76,7 @@
                                     <span class="badge bg-success px-2 py-1"><%= p.stock %></span>
                                 <% } %>
                             </td>
-                            <td class="text-end">
+                            <td class="text-end" style="min-width: 140px;">
                                 <button class="btn btn-sm btn-outline-success me-1" onclick="quickAddStock('<%= p._id %>', '<%= p.name %>', '<%= p.stock %>')">
                                     <i class="fas fa-plus"></i> Stock
                                 </button>
@@ -101,7 +91,7 @@
 
                         <!-- Edit Product Modal -->
                         <div class="modal fade" id="editProductModal<%= p._id %>" tabindex="-1">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title fw-bold">Edit Product: <%= p.name %></h5>
@@ -166,7 +156,7 @@
 
 <!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Add New Product</h5>
@@ -225,7 +215,7 @@
 
 <!-- Category Management Modal -->
 <div class="modal fade" id="categoryModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Manage Categories</h5>
@@ -257,7 +247,7 @@
 
 <!-- Import Modal -->
 <div class="modal fade" id="importModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold">Import Data</h5>
